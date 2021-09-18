@@ -2,13 +2,14 @@ package test
 
 import (
 	"fmt"
-	"github.com/timshannon/bolthold"
-	bolt "go.etcd.io/bbolt"
 	"log"
 	"math/rand"
 	"os"
 	"testing"
 	"time"
+
+	"github.com/timshannon/bolthold"
+	bolt "go.etcd.io/bbolt"
 )
 
 var store *bolthold.Store
@@ -46,29 +47,34 @@ func GenRandomKey(l int) string {
 }
 
 func insertAmountWithIndex(count int) {
-	log.Printf("start to insert %d records with index use batch\n", count)
+	//log.Printf("start to insert %d records with index use batch\n", count)
 	startTime := time.Now()
-	err := store.Bolt().Update(func(tx *bolt.Tx) error {
-		for i := 0; i < count; i++ {
-			hashKey := GenRandomKey(16)
-			bindName := fmt.Sprintf("bindname-%d", rand.Intn(500))
-			fileInfo := FileInfoWithIndex{hashKey, bindName, int64(rand.Intn(100000000)), int64(rand.Intn(3000000))}
+	for j := 0; j < 1000; j++ {
+		err := store.Bolt().Update(func(tx *bolt.Tx) error {
+			for i := 0; i < 10000; i++ {
+				hashKey := GenRandomKey(16)
+				bindName := fmt.Sprintf("bindname-%d", rand.Intn(500))
+				fileInfo := FileInfoWithIndex{hashKey, bindName, int64(rand.Intn(100000000)), int64(rand.Intn(3000000))}
 
-			err := store.TxInsert(tx, hashKey, fileInfo)
-			if err != nil {
-				log.Println(err)
+				err := store.TxInsert(tx, hashKey, fileInfo)
+				if err != nil {
+					log.Println(err)
+				}
+				if i%100000 == 0 {
+					log.Println("inserted", i)
+				}
 			}
-			if i%100000 == 0 {
-				log.Println("inserted", i)
-			}
+			return nil
+
+		})
+		if err != nil {
+			log.Println(err)
 		}
-		return nil
 
-	})
-	if err != nil {
-		log.Println(err)
+		log.Println("insert the :", j, "th 10000 with time:", time.Since(startTime).Milliseconds(), "ms")
+
 	}
-	log.Println("insert 100W record with index cost time:", time.Since(startTime).Milliseconds(), "ms")
+
 }
 
 func queryBindNameWithIndex(bindName string) {
