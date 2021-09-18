@@ -43,7 +43,7 @@ type FileLastAccessInfo struct {
 //	}
 //}
 
-func Test_insertAmountWithoutIndex(t *testing.T) {
+func Test_insertAmountWithIndex(t *testing.T) {
 	os.Remove("test.db")
 	var err error
 	store, err = bolthold.Open("test.db", 0666, nil)
